@@ -67,7 +67,7 @@ export default App;
 websocket交互过程中的报错回调的参数说明
 
 | 参数 | 说明 | 类型 | 其他 |
-| --- | --- | --- |  |
+| --- | --- | --- | --- |
 | INPUT_EMPTY | 点击发送内容为空 | string |  |
 | NOT_LOGIN | token不存在或token过期 | string |  |
 | NET_OFFLINE | 网络中断 | string |  |
@@ -81,7 +81,7 @@ websocket交互过程中的报错回调的参数说明
 Answer组件的props
 
 | 参数 | 说明 | 类型 | 其他 |
-| --- | --- | --- |  |
+| --- | --- | --- | --- |
 | data | 回答的内容 | string |  |
 | isDone | 回答是否结束 | boolean |  |
 | status | 回答的状态值 | 1 \| 2 \| 3 \| 4 | 1创建提问未开始回答 2回答中 3回答完成 4回答异常 |
