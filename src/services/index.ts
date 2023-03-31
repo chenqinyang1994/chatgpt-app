@@ -1,7 +1,6 @@
 import ReconnectingWebSocket from "reconnecting-websocket";
 import request from '../utils/request';
 import { authToken } from '../utils/authService';
-import { wsAPI } from "../constants/api";
 
 const BASE_URL = '';
 
@@ -17,17 +16,19 @@ export function indexPageQuestion(data: {
   });
 }
 
-export function indexQuestionDetail({ id }: { id: number | string }) {
+export function indexQuestionDetail({ api, id }: { api: string; id: number | string }) {
   return request({
-    url: `${BASE_URL}/question/${id}`,
+    url: `${api}${BASE_URL}/question/${id}`,
     method: 'get',
   });
 }
 
 export function chatWS({
+    wsAPI,
     successFn,
     errorFn
   }: {
+    wsAPI: string;
     successFn: (res: any) => void;
     errorFn: (err: any) => void;
   }) {

@@ -1,12 +1,7 @@
 import type { Method, AxiosResponse } from 'axios';
 import axios from 'axios';
 
-import baseConfig from '../base.config';
-import { api } from '../constants/api';
-
 import { authToken } from './authService';
-
-const { httpError } = baseConfig;
 
 const notToast = ['payment/status'];
 
@@ -22,7 +17,7 @@ const request = async (options: Ioptions) => {
   const useURLParam = ['GET', 'DELETE'].indexOf(method.toUpperCase()) >= 0;
   try {
     const res = await axios({
-      url: `${api}${url}`,
+      url,
       data: !useURLParam ? data : undefined,
       params: useURLParam ? data : undefined,
       method,
@@ -58,10 +53,8 @@ const request = async (options: Ioptions) => {
       // if (failureTime >= MaxFailureTime) {
       //   netWorkState.set(false);
       // }
-      httpError && httpError(err.response.data.error);
       return { code: -1, msg: err.response.data.error };
     }
-    httpError && httpError(err.message);
     return { code: -1, msg: err.message };
   }
 };

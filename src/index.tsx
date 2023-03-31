@@ -5,7 +5,6 @@ import { indexQuestionDetail, chatWS } from "./services/index";
 import { authToken } from "./utils/authService";
 import Chat from "./components/chat";
 import sendImg from "./assets/chat-images/send.png";
-import baseConfig from './base.config';
 import {
     INPUT_EMPTY,
     NOT_LOGIN,
@@ -16,6 +15,17 @@ import {
     WS_ERROR
 } from './constants/error';
 import './index.less';
+
+export interface baseProps {
+    httpAPI: string;
+    wsAPI: string;
+    waitTimer?: number;
+    answeringTimer?: number;
+    questionFetchCountMax?: number;
+    socketHeartbeat?: number;
+    questionFetchTimer?: number;
+    httpError?: (msg: string) => void;
+}
 
 export interface AnswerProps {
     data: string;
@@ -30,6 +40,7 @@ export interface HomeProps {
     onCopy?: (type: 'question' | 'answer') => void;
     Question?: ({ data }: { data: string }) => JSX.Element;
     Answer?: ({ data, isDone, status }: AnswerProps) => JSX.Element;
+    baseConfig: baseProps;
 }
 // 定义外部暴露的方法
 export interface InnerComponentRef {
@@ -46,7 +57,7 @@ export interface IItem {
 }
 
 const Home = forwardRef<InnerComponentRef, HomeProps>((
-    { className, userId, onError, onCopy, Question, Answer },
+    { className, userId, onError, onCopy, Question, Answer, baseConfig },
     ref
 ) => {
     const [chatData, setChatData] = useState<Array<IItem>>([]);
@@ -78,11 +89,16 @@ const Home = forwardRef<InnerComponentRef, HomeProps>((
     const questionInputRef: MutableRefObject<string> = useRef('');
 
     const {
+        // http请求接口地址
+        httpAPI = "http://10.60.129.65:3080",
+        // websocket请求接口地址
+        wsAPI = "ws://10.60.129.65:3080",
         waitTimer = 5, // 后端无响应等待时长 默认5s
         answeringTimer = 3, // websocket message 回复中断等待时长 默认3s
         questionFetchCountMax = 10, // websocket message 回复中断 用http轮询 最大轮询次数 默认10次
         socketHeartbeat = 30, // websocket心跳时间间隔 默认30s
-        questionFetchTimer = 3 // question详情接口轮询间隔 默认3s
+        questionFetchTimer = 3, // question详情接口轮询间隔 默认3s
+        httpError = () => {}
     } = baseConfig;
 
     // useImperativeHandle用于定义ref暴露给父组件的方法 获取全部数据
@@ -210,7 +226,7 @@ const Home = forwardRef<InnerComponentRef, HomeProps>((
         questionFetchCount.current = 0;
         const onQuestionFetch = async () => {
             questionFetchCount.current = questionFetchCount.current + 1;
-            const res = await indexQuestionDetail({ id });
+            const res = await indexQuestionDetail({ api: httpAPI, id });
             if (res.code === 200) {
                 const answer = res?.data?.answer;
                 if (answer === null || answer === undefined) {
@@ -240,7 +256,9 @@ const Home = forwardRef<InnerComponentRef, HomeProps>((
                     },
                     "answer"
                 );
+                return;
             }
+            httpError && httpError(res.msg);
         };
         onQuestionFetch();
     }
@@ -248,6 +266,7 @@ const Home = forwardRef<InnerComponentRef, HomeProps>((
     function WsHandshake() {
         // 连接socket，处理socket返回的message
         wsRef.current = chatWS({
+            wsAPI,
             successFn(res) {
                 const {
                     op,
