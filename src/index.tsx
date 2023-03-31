@@ -90,9 +90,9 @@ const Home = forwardRef<InnerComponentRef, HomeProps>((
 
     const {
         // http请求接口地址
-        httpAPI = "http://10.60.129.65:3080",
+        httpAPI = "",
         // websocket请求接口地址
-        wsAPI = "ws://10.60.129.65:3080",
+        wsAPI = "",
         waitTimer = 5, // 后端无响应等待时长 默认5s
         answeringTimer = 3, // websocket message 回复中断等待时长 默认3s
         questionFetchCountMax = 10, // websocket message 回复中断 用http轮询 最大轮询次数 默认10次
