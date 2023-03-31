@@ -4,6 +4,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import babel from "@rollup/plugin-babel";
 import less from "rollup-plugin-less";
 import image from '@rollup/plugin-image';
+import terser from '@rollup/plugin-terser';
 
 export default {
   input: "./src/index.tsx",
@@ -39,7 +40,11 @@ export default {
     }),
     less({
       output: "dist/bundle.css",
+      option: {
+        compress: true
+      }
     }),
+    terser()
   ],
   external: ["react", "react-dom", "axios"],
 };
