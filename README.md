@@ -112,12 +112,149 @@ const fn = () => {
 };
 
 const App = () => (
-  <ChatgptApp 
-    ref={chatRef} 
-    baseConfig={baseConfig} 
-    onError={onError} 
-  />
+  <ChatgptApp ref={chatRef} baseConfig={baseConfig} onError={onError} />
 );
 
 export default App;
+```
+
+## 服务端接口文档
+
+### websocket 对接规范
+
+#### 连接
+
+前端发起连接请求，在 query 中加 token 参数，用来识别用户。
+
+```js
+ws://127.0.0.1:3080?token=xxx
+```
+
+#### 心跳
+
+前端每隔 30 秒，发送一个心跳：ping，服务端需返回：pong
+
+#### 数据交互
+
+- 前端发送消息
+  - 消息体为 json 格式的字符串（json -> string -> server）
+
+| 参数   | 说明         | 必传 |
+| ------ | ------------ | ---- |
+| op   | 操作类型，前后端开发前约定好   | Y |
+| userId | 表示用户唯一标识 | N    |
+| webId | 一组对话中，前端生成这组对话的唯一id | N    |
+| webId | 问题内容 | Y    |
+
+例：
+
+```json
+{
+    "op": "question",
+    "userId": 123,
+    "question": "今天天气怎么样",
+    "webId": "xxx111"
+}
+```
+
+- 服务端返回消息
+    - 消息体为json格式的字符串（json -> string -> web）
+
+| 参数   | 说明         | 必传 |
+| ------ | ------------ | ---- |
+| op   | 操作类型，前后端开发前约定好answer   | Y |
+| index | 服务端返回的回答内容的索引（用来给前端排序，有时可能返回的是乱序） | Y |
+| webId | 前端如果发送，后端必须返回 | N    |
+| answer | 服务端返回的回答内容 | Y |
+
+例：
+
+```json
+{
+    "op": "answer",
+    "answer": "今天下雨",
+    "index": 1,
+    "webId": "sdf4324lsjdfkl"
+}
+```
+
+- 服务端返回状态
+    - 服务端处理消息的各个阶段，需返回前端处理状态，参数如下：
+
+| 参数   | 说明         | 必传 | 类型 |
+| ------ | ------------ | ---- | ---- |
+| op   | 固定“status”。表示消息是返回状态 | Y | string |
+| status | 1 服务端收到消息 2 服务端处理消息完成，开始向前端发送消息 3 所有消息发送完毕 4 处理当前消息发生错误 | Y | number |
+| webId | 前端如果发送，后端必须返回 | N    | string |
+| isDone | 表示此组对话是否已结束。一般status=3、4时isDone=true | Y | boolean |
+
+例：
+
+```json
+{
+    "op": "status",
+    "status": 1,
+    "isDone": false,
+    "webId": "xljlsdf123sfg"
+}
+```
+
+- 服务端返回异常
+    - 服务端发生错误时，需要返回错误信息，参数如下：
+
+| 参数   | 说明         | 必传 | 类型 |
+| ------ | ------------ | ---- | ---- |
+| op   | 固定“error”。表示消息是返回错误 | Y | string |
+| message | 错误提示内容（约定：如果message为4201，则表示“免费提问额度不足”） | N    | string |
+
+例：
+
+```json
+{
+    "op": "error",
+    "message": "网络波动"
+}
+```
+
+### http接口查询问题详情
+
+GET http://127.0.0.1:3080/question/:webId
+
+
+| 参数   | 说明         | 位置 |
+| ------ | ------------ | ---- |
+| webId   | 前端生成的webId | query |
+| Authorization   | token | header |
+
+Response
+
+```json
+{
+    "code": 200,
+    "data": {
+        "id": 20666,
+        "webId": "wsl3",
+        "userId": 1,
+        "anchorId": null,
+        "question": "今年哪年",
+        "answer": null,
+        "questionAt": "2023-03-29T10:01:05.000Z",
+        "answerAt": null,
+        "needDigest": 0,
+        "digest": null,
+        "finalQuestion": [
+            {
+                "role": "system",
+                "content": "nihao。\n你好！有什么可以帮助您的吗？\n\n今年哪年。\n今年是2021年。\n\n今年哪年。\n今年是2021年。\n\n今年哪年。\n今年是2021年。"
+            },
+            {
+                "role": "user",
+                "content": "今年哪年"
+            }
+        ],
+        "status": 1,
+        "error": null
+    },
+    "error": ""
+}
 ```
