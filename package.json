@@ -56,12 +56,12 @@
   },
   "type": "module",
   "types": "dist/index.d.ts",
-  "homepage": "https://github.com/chenqinyang1994/chatgpt-app",
+  "homepage": "https://github.com/cmux/chatgpt-app",
   "repository": {
     "type": "git",
-    "url": "git@github.com:chenqinyang1994/chatgpt-app.git"
+    "url": "git@github.com:cmux/chatgpt-app.git"
   },
   "bugs": {
-    "url": "https://github.com/chenqinyang1994/chatgpt-app/issues"
+    "url": "https://github.com/cmux/chatgpt-app/issues"
   }
 }
